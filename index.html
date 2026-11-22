@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hackea Tu Carrera 2027 • Fase 0 | UNI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --neon-cyan: #00f6ff;
+      --neon-pink: #ff007f;
+      --neon-purple: #9d4edd;
+      --neon-green: #00f59b;
+      --bg-dark: #05060c;
+      --card-bg: rgba(11, 13, 27, 0.92);
+      --input-bg: #050714;
+      --text-white: #ffffff;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(0, 246, 255, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(255, 0, 127, 0.12) 0%, transparent 40%),
+        linear-gradient(rgba(0, 246, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 246, 255, 0.035) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+      color: #e0e6ed;
+      margin: 0;
+      padding: 24px 16px 50px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 0 35px rgba(0, 246, 255, 0.15), inset 0 0 20px rgba(255, 0, 127, 0.06);
+      border: 1px solid rgba(0, 246, 255, 0.35);
+      position: relative;
+    }
+
+    .edition-pill {
+      display: table;
+      margin: 0 auto 10px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.72em;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      color: var(--neon-cyan);
+      background: rgba(0, 246, 255, 0.08);
+      border: 1px solid rgba(0, 246, 255, 0.3);
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-cyan);
+      text-align: center;
+      margin: 0;
+      font-size: clamp(1.55rem, 4vw, 2.15rem);
+      letter-spacing: 2.5px;
+      text-shadow: 0 0 14px rgba(0, 246, 255, 0.55);
+    }
+
+    p.subtitle {
+      text-align: center;
+      color: var(--neon-pink);
+      margin: 6px 0 24px;
+      font-weight: 700;
+      font-size: 1.05em;
+      letter-spacing: 1.8px;
+    }
+
+    /* HUD Barra de Progreso */
+    .hud-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding: 12px 16px;
+      background: rgba(5, 7, 20, 0.85);
+      border: 1px solid rgba(0, 246, 255, 0.2);
+      border-radius: 10px;
+      gap: 8px;
+    }
+
+    .hud-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #54637a;
+      transition: all 0.3s ease;
+    }
+
+    .hud-step .num {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #2b354d;
+      background: #090c1d;
+    }
+
+    .hud-step.active {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 8px rgba(0, 246, 255, 0.45);
+    }
+
+    .hud-step.active .num {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 246, 255, 0.15);
+      box-shadow: 0 0 10px rgba(0, 246, 255, 0.4);
+    }
+
+    .hud-step.done { color: var(--neon-pink); }
+
+    .hud-step.done .num {
+      border-color: var(--neon-pink);
+      background: rgba(255, 0, 127, 0.18);
+      color: #fff;
+    }
+
+    .hud-line {
+      flex: 1;
+      height: 2px;
+      background: #1d253d;
+      transition: background 0.3s ease;
+    }
+
+    .hud-line.done {
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+    }
+
+    .stage {
+      display: none;
+      animation: fadeSlide 0.35s ease forwards;
+    }
+
+    .stage.active { display: block; }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    fieldset {
+      border: 1px solid rgba(255, 0, 127, 0.4);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      background-color: rgba(13, 15, 34, 0.55);
+    }
+
+    legend {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      color: var(--neon-pink);
+      padding: 0 10px;
+      font-size: 0.85em;
+      letter-spacing: 1.2px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-grid-academic {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 560px) {
+      .form-grid, .form-grid-academic { grid-template-columns: 1fr; }
+      .hud-step span.label-txt { display: none; }
+    }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #c5d3e8;
+      font-size: 0.98em;
+    }
+
+    input[type="text"], input[type="email"], select {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid #222b52;
+      border-radius: 8px;
+      font-size: 1em;
+      background-color: var(--input-bg);
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--neon-cyan);
+      outline: none;
+      box-shadow: 0 0 12px rgba(0, 246, 255, 0.35);
+    }
+
+    select:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .photo-upload-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px;
+      border: 1.5px dashed rgba(0, 246, 255, 0.45);
+      border-radius: 10px;
+      background: rgba(5, 7, 20, 0.75);
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    .photo-upload-box:hover {
+      border-color: var(--neon-pink);
+      background: rgba(255, 0, 127, 0.06);
+    }
+
+    .photo-preview-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 2px solid var(--neon-cyan);
+      background: #0b1026;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(0, 246, 255, 0.25);
+    }
+
+    .photo-preview-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .photo-upload-info { flex: 1; }
+    .photo-upload-info strong {
+      display: block;
+      color: var(--neon-cyan);
+      font-size: 1em;
+    }
+    .photo-upload-info span {
+      font-size: 0.88em;
+      color: var(--text-muted);
+    }
+
+    .option-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 500px) {
+      .option-cards { grid-template-columns: 1fr; }
+    }
+
+    .opt-card {
+      padding: 11px 14px;
+      border-radius: 9px;
+      border: 1px solid #222b52;
+      background: #060919;
+      color: #d0d9e8;
+      font-weight: 700;
+      font-size: 0.96em;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.22s ease;
+    }
+
+    .opt-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 9px;
+      width: 100%;
+    }
+
+    .opt-card-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .opt-card:hover {
+      border-color: rgba(0, 246, 255, 0.5);
+      background: rgba(0, 246, 255, 0.05);
+    }
+
+    .opt-card.selected {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 246, 255, 0.11);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(0, 246, 255, 0.25);
+    }
+
+    .opt-card.has-dial.selected {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(0, 246, 255, 0.12), rgba(157, 78, 221, 0.12));
+    }
+
+    .opt-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #475569;
+      flex-shrink: 0;
+    }
+
+    .opt-card.selected .opt-dot {
+      border-color: var(--neon-cyan);
+      background: var(--neon-cyan);
+      box-shadow: 0 0 8px var(--neon-cyan);
+    }
+
+    .selected-level-pill {
+      display: none;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.72rem;
+      padding: 2px 9px;
+      border-radius: 12px;
+      background: rgba(0, 246, 255, 0.16);
+      border: 1px solid rgba(0, 246, 255, 0.45);
+      color: var(--neon-cyan);
+      letter-spacing: 0.5px;
+    }
+
+    .opt-card.has-dial.selected .selected-level-pill {
+      display: inline-block;
+    }
+
+    .level-dial-drawer {
+      display: none;
+      margin-top: 11px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0, 246, 255, 0.22);
+      animation: fadeSlide 0.25s ease forwards;
+    }
+
+    .opt-card.has-dial.selected .level-dial-drawer {
+      display: block;
+    }
+
+    .dial-caption {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: #a8bbd6;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .dial-caption span.hint {
+      font-size: 0.76rem;
+      color: var(--neon-pink);
+    }
+
+    .dial-wheel-track {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      background: rgba(4, 6, 16, 0.9);
+      padding: 5px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 246, 255, 0.25);
+    }
+
+    .dial-node {
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #64748b;
+      background: #090d21;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      user-select: none;
+    }
+
+    .dial-node:hover {
+      color: #fff;
+      border-color: rgba(0, 246, 255, 0.45);
+    }
+
+    .dial-node.active-range {
+      color: #cfe8ff;
+      background: rgba(0, 246, 255, 0.12);
+    }
+
+    .dial-node.current {
+      background: linear-gradient(135deg, var(--neon-cyan), #00a8ff);
+      color: #030612;
+      border-color: #fff;
+      transform: scale(1.08);
+      box-shadow: 0 0 12px rgba(0, 246, 255, 0.65);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+      color: white;
+      padding: 15px 18px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95em;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 1px;
+      box-shadow: 0 0 18px rgba(255, 0, 127, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 0 26px rgba(255, 0, 127, 0.7);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #080b1c;
+      color: #cbd5e1;
+      border: 1px solid #2b365e;
+      padding: 15px 18px;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+    }
+
+    .error-banner {
+      display: none;
+      background: rgba(255, 0, 127, 0.15);
+      border: 1px solid var(--neon-pink);
+      color: #ff9ec7;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-weight: 700;
+      font-size: 0.95em;
+    }
+
+    .email-notice {
+      background: rgba(0, 246, 255, 0.09);
+      color: var(--neon-cyan);
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 0.96em;
+      margin-bottom: 22px;
+      border: 1px solid rgba(0, 246, 255, 0.45);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .fotocheck-stage-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .preview-frame {
+      width: 100%;
+      max-width: 380px;
+      border-radius: 18px;
+      box-shadow: 0 0 38px rgba(0, 246, 255, 0.28), 0 0 20px rgba(255, 0, 127, 0.18);
+      background: transparent;
+    }
+
+    .preview-frame svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .download-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 380px;
+      margin-top: 18px;
+    }
+
+    .btn-pdf {
+      width: 100%;
+      background: linear-gradient(90deg, #00d2ff, #00f6ff);
+      color: #040714;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 0.9em;
+      cursor: pointer;
+      letter-spacing: 0.8px;
+      box-shadow: 0 0 18px rgba(0, 246, 255, 0.45);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-pdf:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 26px rgba(0, 246, 255, 0.75);
+    }
+
+    .btn-img {
+      width: 100%;
+      background: #060919;
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0, 246, 255, 0.5);
+      padding: 13px 18px;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      font-size: 0.84em;
+      letter-spacing: 0.7px;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-img:hover {
+      background: rgba(0, 246, 255, 0.14);
+      box-shadow: 0 0 15px rgba(0, 246, 255, 0.28);
+    }
+
+    /* ================= VISTA DE VERIFICACIÓN POR ESCANEO QR ================= */
+    .verify-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .verify-banner.valid {
+      background: rgba(0, 245, 155, 0.12);
+      border: 1.5px solid var(--neon-green);
+      color: var(--neon-green);
+      box-shadow: 0 0 20px rgba(0, 245, 155, 0.22);
+    }
+
+    .verify-banner.invalid {
+      background: rgba(255, 0, 127, 0.15);
+      border: 1.5px solid var(--neon-pink);
+      color: #ff85c0;
+    }
+
+    .verify-meta {
+      text-align: center;
+      font-size: 0.92rem;
+      color: #a8bbd6;
+      margin-bottom: 18px;
+    }
+
+    .loader-box {
+      text-align: center;
+      padding: 40px 20px;
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-cyan);
+      letter-spacing: 1.5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="edition-pill" id="topEditionPill">EDICIÓN 2027 • SISTEMA ACTIVO</div>
+    <h1>HACKEA TU CARRERA</h1>
+    <p class="subtitle" id="topSubtitle">ESCAPE ROOM PROFESIONAL • FASE 0</p>
+
+    <!-- Indicador de Progreso HUD (3 Etapas) -->
+    <div class="hud-stepper" id="hudStepper">
+      <div class="hud-step active" id="hudStep1">
+        <span class="num">01</span>
+        <span class="label-txt">REGISTRO</span>
+      </div>
+      <div class="hud-line" id="hudLine1"></div>
+      <div class="hud-step" id="hudStep2">
+        <span class="num">02</span>
+        <span class="label-txt">PREGUNTAS</span>
+      </div>
+      <div class="hud-line" id="hudLine2"></div>
+      <div class="hud-step" id="hudStep3">
+        <span class="num">03</span>
+        <span class="label-txt">FOTOCHECK</span>
+      </div>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <!-- ==================== MODO VERIFICACIÓN QR (?id=...) ==================== -->
+    <div class="stage" id="verifyStage">
+      <div class="loader-box" id="verifyLoader">
+        ⏳ VERIFICANDO CREDENCIAL EN BASE DE DATOS UNI...
+      </div>
+
+      <div id="verifyResultContent" style="display:none;">
+        <div class="verify-banner valid" id="verifyStatusBanner">
+          ✓ CREDENCIAL AUTÉNTICA VERIFICADA
+        </div>
+        <div class="verify-meta" id="verifyTimestampText"></div>
+
+        <div class="fotocheck-stage-wrap">
+          <div class="preview-frame" id="verifyPreviewContainer"></div>
+          <div class="download-actions">
+            <button type="button" class="btn-pdf" onclick="descargarFotocheckPDF()">📄 DESCARGAR FOTOCHECK (PDF)</button>
+            <button type="button" class="btn-img" onclick="descargarFotocheckImagen()">🖼️ DESCARGAR FOTOCHECK (IMAGEN)</button>
+            <button type="button" class="btn-secondary" style="width:100%; margin-top:4px;" onclick="irARegistroNuevo()">+ REGISTRAR OTRO PARTICIPANTE</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="verifyErrorContent" style="display:none; text-align:center;">
+        <div class="verify-banner invalid">
+          ✕ CREDENCIAL NO ENCONTRADA O INVÁLIDA
+        </div>
+        <p style="color:#cbd5e1; margin-bottom:20px;">
+          El código escaneado no corresponde a un participante registrado en la edición 2027.
+        </p>
+        <button type="button" class="btn-primary" onclick="irARegistroNuevo()">IR AL REGISTRO OFICIAL</button>
+      </div>
+    </div>
+
+    <!-- ==================== FORMULARIO DE INSCRIPCIÓN ==================== -->
+    <form id="perfilForm" novalidate>
+      <!-- ETAPA 1: REGISTRO -->
+      <div class="stage active" id="stage1">
+        <fieldset>
+          <legend>01 // IDENTIDAD DEL PARTICIPANTE</legend>
+          <div class="form-group">
+            <label for="nombres">Nombres y Apellidos *</label>
+            <input type="text" id="nombres" required placeholder="Ej. Ricardo Rivera Cevallos">
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="codigo">Código UNI / DNI *</label>
+              <input type="text" id="codigo" required placeholder="Ej. 20251234A">
+            </div>
+            <div class="form-group">
+              <label for="correo">Correo Institucional o Personal *</label>
+              <input type="email" id="correo" required placeholder="ejemplo@uni.edu.pe">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label>Fotografía de Perfil para Fotocheck (JPG/PNG) *</label>
+            <input type="file" id="foto" accept="image/*" required style="display:none;">
+            <div class="photo-upload-box" onclick="document.getElementById('foto').click()">
+              <div class="photo-preview-circle">
+                <svg id="photoPlaceholderIcon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00f6ff" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <img id="miniPhotoPreview" src="" alt="Vista previa">
+              </div>
+              <div class="photo-upload-info">
+                <strong id="photoStatusTitle">Seleccionar fotografía de jugador</strong>
+                <span id="photoStatusSub">Haz clic aquí para cargar una imagen (JPG o PNG)</span>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>02 // CREDENCIALES ACADÉMICAS (UNI 2027)</legend>
+          <div class="form-group">
+            <label for="facultad">¿A qué facultad perteneces? *</label>
+            <select id="facultad" required onchange="actualizarCarreras()">
+              <option value="">-- Selecciona una Facultad --</option>
+              <option value="FAUA">[FAUA] Facultad de Arquitectura, Urbanismo y Artes</option>
+              <option value="FC">[FC] Facultad de Ciencias</option>
+              <option value="FIA">[FIA] Facultad de Ingeniería Ambiental</option>
+              <option value="FIC">[FIC] Facultad de Ingeniería Civil</option>
+              <option value="FIEECS">[FIEECS] Facultad de Ingeniería Económica, Estadística y CC.SS.</option>
+              <option value="FIEE">[FIEE] Facultad de Ingeniería Eléctrica y Electrónica</option>
+              <option value="FIGMM">[FIGMM] Facultad de Ingeniería Geológica, Minera y Metalúrgica</option>
+              <option value="FIIS">[FIIS] Facultad de Ingeniería Industrial y de Sistemas</option>
+              <option value="FIM">[FIM] Facultad de Ingeniería Mecánica</option>
+              <option value="FIP">[FIP] Facultad de Ingeniería de Petróleo, Gas Natural y Petroquímica</option>
+              <option value="FIQT">[FIQT] Facultad de Ingeniería Química y Textil</option>
+            </select>
+          </div>
+
+          <div class="form-grid-academic">
+            <div class="form-group">
+              <label for="carrera">¿Cuál es tu carrera profesional? *</label>
+              <select id="carrera" required disabled>
+                <option value="">-- Primero selecciona una Facultad --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="ciclo">Ciclo actual (1 - 10) *</label>
+              <select id="ciclo" required>
+                <option value="">-- Ciclo --</option>
+                <option value="1">1° Ciclo</option>
+                <option value="2">2° Ciclo</option>
+                <option value="3">3° Ciclo</option>
+                <option value="4">4° Ciclo</option>
+                <option value="5">5° Ciclo</option>
+                <option value="6">6° Ciclo</option>
+                <option value="7">7° Ciclo</option>
+                <option value="8">8° Ciclo</option>
+                <option value="9">9° Ciclo</option>
+                <option value="10">10° Ciclo</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="btn-row">
+          <button type="button" class="btn-primary" onclick="irAEtapa2()">SIGUIENTE: PREGUNTAS DEL RETO →</button>
+        </div>
+      </div>
+
+      <!-- ETAPA 2: PREGUNTAS -->
+      <div class="stage" id="stage2">
+        <fieldset>
+          <legend>03 // CALIBRACIÓN DE HABILIDADES</legend>
+
+          <div class="form-group">
+            <label>1. ¿Cuál es tu área de interés principal y tu nivel actual (1–10)? *</label>
+            <input type="hidden" id="areaInteres" required>
+            <input type="hidden" id="nivelArea" value="5">
+            <div class="option-cards" data-target="areaInteres" id="areaCardsGroup">
+              <div class="opt-card has-dial" data-value="Tecnología">
+                <div class="opt-card-header">
+                  <span class="opt-card-left"><span class="opt-dot"></span>Tecnología</span>
+                  <span class="selected-level-pill">NV. 5/10</span>
+                </div>
+                <div class="level-dial-drawer">
+                  <div class="dial-caption">
+                    <span>Autoevaluación en Tecnología: <strong class="level-desc" style="color:#00f6ff;">Intermedio (5/10)</strong></span>
+                    <span class="hint">Clic o rueda 1–10</span>
+                  </div>
+                  <div class="dial-wheel-track"></div>
+                </div>
+              </div>
+
+              <div class="opt-card has-dial" data-value="Gestión">
+                <div class="opt-card-header">
+                  <span class="opt-card-left"><span class="opt-dot"></span>Gestión</span>
+                  <span class="selected-level-pill">NV. 5/10</span>
+                </div>
+                <div class="level-dial-drawer">
+                  <div class="dial-caption">
+                    <span>Autoevaluación en Gestión: <strong class="level-desc" style="color:#00f6ff;">Intermedio (5/10)</strong></span>
+                    <span class="hint">Clic o rueda 1–10</span>
+                  </div>
+                  <div class="dial-wheel-track"></div>
+                </div>
+              </div>
+
+              <div class="opt-card has-dial" data-value="Finanzas">
+                <div class="opt-card-header">
+                  <span class="opt-card-left"><span class="opt-dot"></span>Finanzas</span>
+                  <span class="selected-level-pill">NV. 5/10</span>
+                </div>
+                <div class="level-dial-drawer">
+                  <div class="dial-caption">
+                    <span>Autoevaluación en Finanzas: <strong class="level-desc" style="color:#00f6ff;">Intermedio (5/10)</strong></span>
+                    <span class="hint">Clic o rueda 1–10</span>
+                  </div>
+                  <div class="dial-wheel-track"></div>
+                </div>
+              </div>
+
+              <div class="opt-card has-dial" data-value="Innovación">
+                <div class="opt-card-header">
+                  <span class="opt-card-left"><span class="opt-dot"></span>Innovación</span>
+                  <span class="selected-level-pill">NV. 5/10</span>
+                </div>
+                <div class="level-dial-drawer">
+                  <div class="dial-caption">
+                    <span>Autoevaluación en Innovación: <strong class="level-desc" style="color:#00f6ff;">Intermedio (5/10)</strong></span>
+                    <span class="hint">Clic o rueda 1–10</span>
+                  </div>
+                  <div class="dial-wheel-track"></div>
+                </div>
+              </div>
+
+              <div class="opt-card has-dial" data-value="Operaciones / Logística">
+                <div class="opt-card-header">
+                  <span class="opt-card-left"><span class="opt-dot"></span>Operaciones / Logística</span>
+                  <span class="selected-level-pill">NV. 5/10</span>
+                </div>
+                <div class="level-dial-drawer">
+                  <div class="dial-caption">
+                    <span>Autoevaluación en Operaciones: <strong class="level-desc" style="color:#00f6ff;">Intermedio (5/10)</strong></span>
+                    <span class="hint">Clic o rueda 1–10</span>
+                  </div>
+                  <div class="dial-wheel-track"></div>
+                </div>
+              </div>
+
+              <div class="opt-card has-dial" data-value="Investigación y Desarrollo">
+                <div class="opt-card-header">
+                  <span class="opt-card-left"><span class="opt-dot"></span>Investigación y Desarrollo</span>
+                  <span class="selected-level-pill">NV. 5/10</span>
+                </div>
+                <div class="level-dial-drawer">
+                  <div class="dial-caption">
+                    <span>Autoevaluación en I+D: <strong class="level-desc" style="color:#00f6ff;">Intermedio (5/10)</strong></span>
+                    <span class="hint">Clic o rueda 1–10</span>
+                  </div>
+                  <div class="dial-wheel-track"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>2. ¿Qué habilidad buscas fortalecer o desbloquear? *</label>
+            <input type="hidden" id="habilidad" required>
+            <div class="option-cards" data-target="habilidad">
+              <div class="opt-card" data-value="Comunicación"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Comunicación</span></div></div>
+              <div class="opt-card" data-value="Liderazgo"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Liderazgo</span></div></div>
+              <div class="opt-card" data-value="Networking"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Networking</span></div></div>
+              <div class="opt-card" data-value="Trabajo en equipo"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Trabajo en equipo</span></div></div>
+              <div class="opt-card" data-value="Resolución de problemas"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Resolución de problemas</span></div></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>3. ¿Cuál es tu objetivo principal en esta edición? *</label>
+            <input type="hidden" id="objetivo" required>
+            <div class="option-cards" data-target="objetivo">
+              <div class="opt-card" data-value="Explorar opciones"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Explorar opciones</span></div></div>
+              <div class="opt-card" data-value="Networking"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Networking (Red de contactos)</span></div></div>
+              <div class="opt-card" data-value="Buscar mentoría"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Buscar mentoría</span></div></div>
+              <div class="opt-card" data-value="Prepararse para prácticas"><div class="opt-card-header"><span class="opt-card-left"><span class="opt-dot"></span>Prepararse para prácticas</span></div></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="btn-row">
+          <button type="button" class="btn-secondary" onclick="cambiarEtapa(1)">← ATRÁS</button>
+          <button type="submit" class="btn-primary" id="btnSubmit">🔑 GENERAR FOTOCHECK Y ENVIAR</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- ==================== ETAPA 3: FOTOCHECK GENERADO ==================== -->
+    <div class="stage" id="stage3">
+      <div class="email-notice" id="emailNoticeText">
+        ✉️ <strong>¡REGISTRO COMPLETADO!</strong><br>
+        Hemos enviado tu Fotocheck oficial en PDF al correo <strong id="sentEmailDisplay"></strong>.
+      </div>
+
+      <div class="fotocheck-stage-wrap">
+        <div class="preview-frame" id="vectorPreviewContainer"></div>
+
+        <div class="download-actions">
+          <button type="button" class="btn-pdf" onclick="descargarFotocheckPDF()">📄 DESCARGAR FOTOCHECK (PDF)</button>
+          <button type="button" class="btn-img" onclick="descargarFotocheckImagen()">🖼️ DESCARGAR FOTOCHECK (IMAGEN)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // PEGA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT (/exec)
+    // =========================================================================
+    const APPS_SCRIPT_URL = "PEGA_AQUI_TU_URL_DE_GOOGLE_APPS_SCRIPT";
+
+    // URL pública de respaldo por si pruebas el archivo localmente antes de subirlo
+    const FALLBACK_GITHUB_URL = "https://TU_USUARIO.github.io/hackea-tu-carrera-2027/";
+
+    const carrerasPorFacultad = {
+      FAUA: ["Arquitectura", "Urbanismo"],
+      FC: ["Ciencias de la Computación", "Física", "Ingeniería Física", "Matemática", "Química"],
+      FIA: ["Ingeniería Ambiental", "Ingeniería de Higiene y Seguridad Industrial", "Ingeniería Sanitaria"],
+      FIC: ["Ingeniería Civil"],
+      FIEECS: ["Ingeniería Económica", "Ingeniería Estadística"],
+      FIEE: ["Ingeniería Biomédica", "Ingeniería de Ciberseguridad", "Ingeniería de Telecomunicaciones", "Ingeniería Eléctrica", "Ingeniería Electrónica"],
+      FIGMM: ["Ingeniería de Minas", "Ingeniería Geológica", "Ingeniería Metalúrgica"],
+      FIIS: ["Ingeniería de Inteligencia Artificial", "Ingeniería de Sistemas", "Ingeniería de Software", "Ingeniería Industrial"],
+      FIM: ["Ingeniería Aeroespacial", "Ingeniería Mecánica", "Ingeniería Mecánica-Eléctrica", "Ingeniería Mecatrónica", "Ingeniería Naval"],
+      FIP: ["Ingeniería de Petróleo y Gas Natural", "Ingeniería Petroquímica"],
+      FIQT: ["Ingeniería Química", "Ingeniería Textil"]
+    };
+
+    let jugadorActual = null;
+    let fotoProcesadaBase64 = "";
+    let fotoImageObj = null;
+
+    // Construye automáticamente la URL base del sitio en GitHub Pages
+    function obtenerBaseUrlSitio() {
+      if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+        return window.location.origin + window.location.pathname;
+      }
+      return FALLBACK_GITHUB_URL;
+    }
+
+    // Al cargar la página, verificar si viene desde el escaneo de un QR (?id=UNI27-...)
+    window.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const idVerificar = params.get("id");
+      if (idVerificar) {
+        iniciarModoVerificacionQR(idVerificar.trim());
+      }
+    });
+
+    async function iniciarModoVerificacionQR(idJugador) {
+      document.getElementById("hudStepper").style.display = "none";
+      document.getElementById("perfilForm").style.display = "none";
+      document.getElementById("topEditionPill").textContent = "SISTEMA DE VERIFICACIÓN OFICIAL • 2027";
+      document.getElementById("verifyStage").classList.add("active");
+
+      if (!APPS_SCRIPT_URL || !APPS_SCRIPT_URL.startsWith("https://script.google.com/")) {
+        document.getElementById("verifyLoader").style.display = "none";
+        document.getElementById("verifyErrorContent").style.display = "block";
+        return;
+      }
+
+      try {
+        const resp = await fetch(`${APPS_SCRIPT_URL}?id=${encodeURIComponent(idJugador)}`);
+        const res = await resp.json();
+
+        document.getElementById("verifyLoader").style.display = "none";
+
+        if (res && res.ok && res.jugador) {
+          const j = res.jugador;
+          const qrUrl = j.qrUrl || `${obtenerBaseUrlSitio()}?id=${encodeURIComponent(j.serialUnico)}`;
+
+          // Imagen de respaldo si el participante no tuviera foto en Drive
+          const avatarFallback = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+            `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="450"><rect width="400" height="450" fill="#0d1330"/><circle cx="200" cy="165" r="65" fill="#00f6ff"/><path d="M90 390 C90 295 310 295 310 390" fill="#00f6ff"/></svg>`
+          );
+
+          const fotoFinal = j.fotoBase64 || avatarFallback;
+
+          jugadorActual = {
+            nombres: j.nombres,
+            codigo: j.codigo,
+            facultad: j.facultad,
+            carrera: j.carrera,
+            ciclo: j.ciclo,
+            areaInteres: j.areaInteres,
+            nivelArea: j.nivelArea,
+            habilidad: j.habilidad,
+            objetivo: j.objetivo,
+            serialUnico: j.serialUnico,
+            qrPayload: qrUrl,
+            fotoBase64: fotoFinal
+          };
+
+          const imgObj = new Image();
+          imgObj.onload = () => { fotoImageObj = imgObj; };
+          imgObj.src = fotoFinal;
+
+          document.getElementById("verifyTimestampText").innerHTML =
+            `Participante registrado oficialmente el <strong>${j.fechaRegistro}</strong> • ID <strong>#${j.serialUnico}</strong>`;
+          document.getElementById("verifyPreviewContainer").innerHTML = generarFotocheckSVG(jugadorActual);
+          document.getElementById("verifyResultContent").style.display = "block";
+        } else {
+          document.getElementById("verifyErrorContent").style.display = "block";
+        }
+      } catch (err) {
+        console.error("Error verificando QR:", err);
+        document.getElementById("verifyLoader").style.display = "none";
+        document.getElementById("verifyErrorContent").style.display = "block";
+      }
+    }
+
+    function irARegistroNuevo() {
+      window.location.href = obtenerBaseUrlSitio();
+    }
+
+    function actualizarCarreras() {
+      const facultadSelect = document.getElementById("facultad");
+      const carreraSelect = document.getElementById("carrera");
+      const selec = facultadSelect.value;
+
+      carreraSelect.innerHTML = '<option value="">-- Selecciona tu Carrera --</option>';
+
+      if (selec && carrerasPorFacultad[selec]) {
+        carreraSelect.disabled = false;
+        carrerasPorFacultad[selec].forEach(carrera => {
+          const opt = document.createElement("option");
+          opt.value = carrera;
+          opt.textContent = carrera;
+          carreraSelect.appendChild(opt);
+        });
+      } else {
+        carreraSelect.disabled = true;
+      }
+    }
+
+    document.getElementById("foto").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const targetW = 600;
+          const targetH = 675;
+          canvas.width = targetW;
+          canvas.height = targetH;
+          const ctx = canvas.getContext("2d");
+
+          const scale = Math.max(targetW / img.width, targetH / img.height);
+          const x = (targetW - img.width * scale) / 2;
+          const y = (targetH - img.height * scale) / 2;
+          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+          fotoProcesadaBase64 = canvas.toDataURL("image/jpeg", 0.9);
+
+          const cleanImg = new Image();
+          cleanImg.onload = function() {
+            fotoImageObj = cleanImg;
+          };
+          cleanImg.src = fotoProcesadaBase64;
+
+          const previewImg = document.getElementById("miniPhotoPreview");
+          previewImg.src = fotoProcesadaBase64;
+          previewImg.style.display = "block";
+          document.getElementById("photoPlaceholderIcon").style.display = "none";
+          document.getElementById("photoStatusTitle").textContent = "✓ Fotografía cargada correctamente";
+          document.getElementById("photoStatusSub").textContent = file.name;
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function obtenerEtiquetaNivel(val) {
+      if (val <= 3) return `Básico (${val}/10)`;
+      if (val <= 6) return `Intermedio (${val}/10)`;
+      if (val <= 8) return `Avanzado (${val}/10)`;
+      return `Experto (${val}/10)`;
+    }
+
+    function inicializarDialesNivel() {
+      const nivelInput = document.getElementById("nivelArea");
+      document.querySelectorAll("#areaCardsGroup .opt-card.has-dial").forEach(card => {
+        const track = card.querySelector(".dial-wheel-track");
+
+        for (let i = 1; i <= 10; i++) {
+          const node = document.createElement("div");
+          node.className = "dial-node" + (i <= 5 ? " active-range" : "") + (i === 5 ? " current" : "");
+          node.textContent = i;
+          node.dataset.num = i;
+
+          node.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            actualizarValorDial(i);
+          });
+
+          track.appendChild(node);
+        }
+
+        track.addEventListener("wheel", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          let actual = parseInt(nivelInput.value, 10) || 5;
+          actual = ev.deltaY < 0 ? Math.min(10, actual + 1) : Math.max(1, actual - 1);
+          actualizarValorDial(actual);
+        }, { passive: false });
+
+        function actualizarValorDial(valor) {
+          nivelInput.value = valor;
+          document.querySelectorAll("#areaCardsGroup .opt-card.has-dial").forEach(c => {
+            c.querySelector(".selected-level-pill").textContent = `NV. ${valor}/10`;
+            c.querySelector(".level-desc").textContent = obtenerEtiquetaNivel(valor);
+            c.querySelectorAll(".dial-node").forEach(n => {
+              const num = parseInt(n.dataset.num, 10);
+              n.classList.toggle("active-range", num <= valor);
+              n.classList.toggle("current", num === valor);
+            });
+          });
+        }
+      });
+    }
+
+    inicializarDialesNivel();
+
+    document.querySelectorAll(".option-cards").forEach(group => {
+      const targetInput = document.getElementById(group.dataset.target);
+      group.querySelectorAll(".opt-card").forEach(card => {
+        card.addEventListener("click", () => {
+          group.querySelectorAll(".opt-card").forEach(c => c.classList.remove("selected"));
+          card.classList.add("selected");
+          targetInput.value = card.dataset.value;
+          ocultarError();
+        });
+      });
+    });
+
+    function mostrarError(msg) {
+      const banner = document.getElementById("errorBanner");
+      banner.textContent = "⚠️ " + msg;
+      banner.style.display = "block";
+      banner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function ocultarError() {
+      document.getElementById("errorBanner").style.display = "none";
+    }
+
+    function cambiarEtapa(num) {
+      ocultarError();
+      document.querySelectorAll(".stage").forEach(s => s.classList.remove("active"));
+      document.getElementById("stage" + num).classList.add("active");
+
+      const s1 = document.getElementById("hudStep1");
+      const s2 = document.getElementById("hudStep2");
+      const s3 = document.getElementById("hudStep3");
+      const l1 = document.getElementById("hudLine1");
+      const l2 = document.getElementById("hudLine2");
+
+      [s1, s2, s3].forEach(el => el.classList.remove("active", "done"));
+      [l1, l2].forEach(el => el.classList.remove("done"));
+
+      if (num === 1) {
+        s1.classList.add("active");
+      } else if (num === 2) {
+        s1.classList.add("done");
+        l1.classList.add("done");
+        s2.classList.add("active");
+      } else if (num === 3) {
+        s1.classList.add("done");
+        l1.classList.add("done");
+        s2.classList.add("done");
+        l2.classList.add("done");
+        s3.classList.add("active");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function irAEtapa2() {
+      const nombres = document.getElementById("nombres").value.trim();
+      const codigo = document.getElementById("codigo").value.trim();
+      const correo = document.getElementById("correo").value.trim();
+      const facultad = document.getElementById("facultad").value;
+      const carrera = document.getElementById("carrera").value;
+      const ciclo = document.getElementById("ciclo").value;
+
+      if (!nombres || !codigo || !correo) {
+        return mostrarError("Completa tus nombres, código UNI/DNI y correo electrónico.");
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+        return mostrarError("Ingresa un correo electrónico válido.");
+      }
+      if (!fotoProcesadaBase64) {
+        return mostrarError("Por favor sube una fotografía de perfil para tu fotocheck.");
+      }
+      if (!facultad || !carrera || !ciclo) {
+        return mostrarError("Selecciona tu facultad, carrera profesional y ciclo actual (1–10).");
+      }
+
+      cambiarEtapa(2);
+    }
+
+    function generarIdentificadorUnico() {
+      const array = new Uint32Array(2);
+      window.crypto.getRandomValues(array);
+      const hexHash = (array[0].toString(16) + array[1].toString(16)).toUpperCase().slice(0, 6);
+      const timePart = Date.now().toString(36).toUpperCase().slice(-3);
+      return `UNI27-${hexHash}${timePart}`;
+    }
+
+    function escaparXML(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function generarFotocheckSVG(data) {
+      const W = 380;
+      const H = 616;
+
+      let gridLines = "";
+      for (let gx = 32; gx < W; gx += 32) {
+        gridLines += `<line x1="${gx}" y1="0" x2="${gx}" y2="${H}" stroke="#101c34" stroke-width="0.6"/>`;
+      }
+      for (let gy = 32; gy < H; gy += 32) {
+        gridLines += `<line x1="0" y1="${gy}" x2="${W}" y2="${gy}" stroke="#101c34" stroke-width="0.6"/>`;
+      }
+
+      const qr = qrcode(0, "M");
+      qr.addData(data.qrPayload);
+      qr.make();
+      const count = qr.getModuleCount();
+      const qrBoxSize = 82;
+      const qrX = 32;
+      const qrY = 504;
+      const pad = 5.5;
+      const cell = (qrBoxSize - pad * 2) / count;
+
+      let qrRects = "";
+      for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+          if (qr.isDark(r, c)) {
+            qrRects += `<rect x="${(qrX + pad + c * cell).toFixed(2)}" y="${(qrY + pad + r * cell).toFixed(2)}" width="${(cell + 0.12).toFixed(2)}" height="${(cell + 0.12).toFixed(2)}" fill="#060914"/>`;
+          }
+        }
+      }
+
+      const pillText = "META: " + data.habilidad.toUpperCase();
+      const pillW = Math.min(316, Math.max(196, pillText.length * 8.2 + 36));
+      const pillX = (W - pillW) / 2;
+
+      const nombreUpper = data.nombres.toUpperCase();
+      const nombreFontSize = nombreUpper.length > 28 ? 13.5 : (nombreUpper.length > 22 ? 15 : 16.5);
+      const acadLinea = `${data.carrera} (${data.facultad}) • ${data.ciclo}° Ciclo`;
+      const acadFontSize = acadLinea.length > 42 ? 10.5 : 12;
+      const areaConNivel = `${data.areaInteres} (${data.nivelArea}/10)`;
+      const areaFontSize = areaConNivel.length > 26 ? 10.2 : 11.2;
+
+      return `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+  <defs>
+    <clipPath id="cardClip">
+      <rect x="0" y="0" width="${W}" height="${H}" rx="18"/>
+    </clipPath>
+    <clipPath id="photoClip">
+      <rect x="127" y="129" width="126" height="142" rx="9"/>
+    </clipPath>
+    <linearGradient id="skillGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff007f"/>
+      <stop offset="100%" stop-color="#b5179e"/>
+    </linearGradient>
+  </defs>
+
+  <g clip-path="url(#cardClip)">
+    <rect x="0" y="0" width="${W}" height="${H}" fill="#070a18"/>
+    ${gridLines}
+
+    <rect x="12" y="12" width="356" height="592" rx="16" fill="none" stroke="#00f6ff" stroke-width="2.6"/>
+    <rect x="17" y="17" width="346" height="582" rx="11" fill="none" stroke="#ff007f" stroke-width="1.1" stroke-opacity="0.8"/>
+
+    <rect x="154" y="27" width="72" height="13" rx="6.5" fill="#03040a" stroke="#00f6ff" stroke-width="1.5"/>
+
+    <rect x="102" y="51" width="176" height="21" rx="10.5" fill="#0c2236" stroke="#00f6ff" stroke-width="0.8" stroke-opacity="0.45"/>
+    <text x="190" y="65" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="10.5" letter-spacing="1.6" fill="#00f6ff">FASE 0 • EDICIÓN 2027</text>
+
+    <text x="190" y="96" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-weight="900" font-size="22" letter-spacing="1.2" fill="#ffffff">HACKEA TU CARRERA</text>
+    <text x="190" y="114" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11.5" letter-spacing="1.8" fill="#ff007f">ESCAPE ROOM PROFESIONAL</text>
+
+    <image href="${data.fotoBase64}" x="127" y="129" width="126" height="142" preserveAspectRatio="xMidYMid slice" clip-path="url(#photoClip)"/>
+    <rect x="126" y="128" width="128" height="144" rx="10" fill="none" stroke="#00f6ff" stroke-width="2.6"/>
+
+    <rect x="${pillX}" y="284" width="${pillW}" height="23" rx="11.5" fill="url(#skillGrad)"/>
+    <text x="190" y="299" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11" letter-spacing="1.1" fill="#ffffff">${escaparXML(pillText)}</text>
+
+    <text x="190" y="330" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-weight="800" font-size="${nombreFontSize}" fill="#ffffff">${escaparXML(nombreUpper)}</text>
+    <text x="190" y="349" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="${acadFontSize}" fill="#00f6ff">${escaparXML(acadLinea)}</text>
+
+    <rect x="32" y="366" width="316" height="112" rx="10" fill="#0a0e20" stroke="#223e63" stroke-width="1.2"/>
+
+    <text x="46" y="391" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11" fill="#ff007f">CÓDIGO UNI:</text>
+    <text x="334" y="391" text-anchor="end" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11.2" fill="#ffffff">${escaparXML(data.codigo)}</text>
+
+    <text x="46" y="415" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11" fill="#ff007f">ÁREA DE INTERÉS:</text>
+    <text x="334" y="415" text-anchor="end" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="${areaFontSize}" fill="#ffffff">${escaparXML(areaConNivel)}</text>
+
+    <text x="46" y="439" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11" fill="#ff007f">A FORTALECER:</text>
+    <text x="334" y="439" text-anchor="end" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11.2" fill="#ffffff">${escaparXML(data.habilidad)}</text>
+
+    <text x="46" y="463" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11" fill="#ff007f">OBJETIVO:</text>
+    <text x="334" y="463" text-anchor="end" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11.2" fill="#ffffff">${escaparXML(data.objetivo)}</text>
+
+    <line x1="32" y1="491" x2="348" y2="491" stroke="#00f6ff" stroke-width="1" stroke-opacity="0.45"/>
+
+    <rect x="${qrX}" y="${qrY}" width="${qrBoxSize}" height="${qrBoxSize}" rx="6" fill="#ffffff"/>
+    ${qrRects}
+
+    <text x="348" y="523" text-anchor="end" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="9.6" letter-spacing="0.3" fill="#cbd5e1">UNIVERSIDAD NACIONAL DE INGENIERÍA</text>
+    <text x="348" y="541" text-anchor="end" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="10.2" letter-spacing="0.6" fill="#00f6ff">PASE OFICIAL DE JUGADOR • 2027</text>
+
+    <rect x="218" y="554" width="130" height="24" rx="5" fill="#0c2236" stroke="#00f6ff" stroke-width="0.8" stroke-opacity="0.45"/>
+    <text x="283" y="570" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-weight="700" font-size="11" letter-spacing="0.8" fill="#00f6ff">#${escaparXML(data.serialUnico)}</text>
+  </g>
+</svg>`.trim();
+    }
+
+    function descargarFotocheckImagen() {
+      if (!jugadorActual || !fotoImageObj) return;
+      const data = jugadorActual;
+      const W = 380;
+      const H = 616;
+      const SCALE = 6;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = W * SCALE;
+      canvas.height = H * SCALE;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(SCALE, SCALE);
+
+      function roundRectPath(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, r);
+      }
+
+      ctx.save();
+      roundRectPath(0, 0, W, H, 18);
+      ctx.clip();
+
+      ctx.fillStyle = "#070a18";
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.strokeStyle = "#101c34";
+      ctx.lineWidth = 0.6;
+      for (let gx = 32; gx < W; gx += 32) {
+        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
+      }
+      for (let gy = 32; gy < H; gy += 32) {
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#00f6ff";
+      ctx.lineWidth = 2.6;
+      roundRectPath(12, 12, 356, 592, 16);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255, 0, 127, 0.8)";
+      ctx.lineWidth = 1.1;
+      roundRectPath(17, 17, 346, 582, 11);
+      ctx.stroke();
+
+      ctx.fillStyle = "#03040a";
+      ctx.strokeStyle = "#00f6ff";
+      ctx.lineWidth = 1.5;
+      roundRectPath(154, 27, 72, 13, 6.5);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#0c2236";
+      ctx.strokeStyle = "rgba(0, 246, 255, 0.45)";
+      ctx.lineWidth = 0.8;
+      roundRectPath(102, 51, 176, 21, 10.5);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#00f6ff";
+      ctx.font = "700 10.5px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText("FASE 0  •  EDICIÓN 2027", 190, 65);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 22px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText("HACKEA TU CARRERA", 190, 96);
+
+      ctx.fillStyle = "#ff007f";
+      ctx.font = "700 11.5px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText("ESCAPE ROOM PROFESIONAL", 190, 114);
+
+      ctx.save();
+      roundRectPath(127, 129, 126, 142, 9);
+      ctx.clip();
+      ctx.drawImage(fotoImageObj, 127, 129, 126, 142);
+      ctx.restore();
+
+      ctx.strokeStyle = "#00f6ff";
+      ctx.lineWidth = 2.6;
+      roundRectPath(126, 128, 128, 144, 10);
+      ctx.stroke();
+
+      const pillText = "META: " + data.habilidad.toUpperCase();
+      const pillW = Math.min(316, Math.max(196, pillText.length * 8.2 + 36));
+      const pillX = (W - pillW) / 2;
+
+      const grad = ctx.createLinearGradient(pillX, 284, pillX + pillW, 284);
+      grad.addColorStop(0, "#ff007f");
+      grad.addColorStop(1, "#b5179e");
+      ctx.fillStyle = grad;
+      roundRectPath(pillX, 284, pillW, 23, 11.5);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 11px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText(pillText, 190, 299);
+
+      const nombreUpper = data.nombres.toUpperCase();
+      const nombreFontSize = nombreUpper.length > 28 ? 13.5 : (nombreUpper.length > 22 ? 15 : 16.5);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 ${nombreFontSize}px 'Segoe UI', Arial, sans-serif`;
+      ctx.fillText(nombreUpper, 190, 330);
+
+      const acadLinea = `${data.carrera} (${data.facultad}) • ${data.ciclo}° Ciclo`;
+      const acadFontSize = acadLinea.length > 42 ? 10.5 : 12;
+      ctx.fillStyle = "#00f6ff";
+      ctx.font = `700 ${acadFontSize}px 'Segoe UI', Arial, sans-serif`;
+      ctx.fillText(acadLinea, 190, 349);
+
+      ctx.fillStyle = "#0a0e20";
+      ctx.strokeStyle = "#223e63";
+      ctx.lineWidth = 1.2;
+      roundRectPath(32, 366, 316, 112, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      const areaConNivel = `${data.areaInteres} (${data.nivelArea}/10)`;
+      const areaFontSize = areaConNivel.length > 26 ? 10.2 : 11.2;
+
+      const rows = [
+        { k: "CÓDIGO UNI:", v: data.codigo, y: 391, vSize: 11.2 },
+        { k: "ÁREA DE INTERÉS:", v: areaConNivel, y: 415, vSize: areaFontSize },
+        { k: "A FORTALECER:", v: data.habilidad, y: 439, vSize: 11.2 },
+        { k: "OBJETIVO:", v: data.objetivo, y: 463, vSize: 11.2 }
+      ];
+
+      rows.forEach(r => {
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#ff007f";
+        ctx.font = "700 11px 'Segoe UI', Arial, sans-serif";
+        ctx.fillText(r.k, 46, r.y);
+
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `700 ${r.vSize}px 'Segoe UI', Arial, sans-serif`;
+        ctx.fillText(r.v, 334, r.y);
+      });
+
+      ctx.strokeStyle = "rgba(0, 246, 255, 0.45)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(32, 491);
+      ctx.lineTo(348, 491);
+      ctx.stroke();
+
+      const qr = qrcode(0, "M");
+      qr.addData(data.qrPayload);
+      qr.make();
+      const count = qr.getModuleCount();
+      const qrBoxSize = 82;
+      const qrX = 32;
+      const qrY = 504;
+      const pad = 5.5;
+      const cell = (qrBoxSize - pad * 2) / count;
+
+      ctx.fillStyle = "#ffffff";
+      roundRectPath(qrX, qrY, qrBoxSize, qrBoxSize, 6);
+      ctx.fill();
+
+      ctx.fillStyle = "#060914";
+      for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+          if (qr.isDark(r, c)) {
+            ctx.fillRect(
+              qrX + pad + c * cell,
+              qrY + pad + r * cell,
+              cell + 0.08,
+              cell + 0.08
+            );
+          }
+        }
+      }
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "700 9.6px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText("UNIVERSIDAD NACIONAL DE INGENIERÍA", 348, 523);
+
+      ctx.fillStyle = "#00f6ff";
+      ctx.font = "700 10.2px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText("PASE OFICIAL DE JUGADOR • 2027", 348, 541);
+
+      ctx.fillStyle = "#0c2236";
+      ctx.strokeStyle = "rgba(0, 246, 255, 0.45)";
+      ctx.lineWidth = 0.8;
+      roundRectPath(218, 554, 130, 24, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#00f6ff";
+      ctx.font = "700 11px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText("#" + data.serialUnico, 283, 570);
+
+      ctx.restore();
+
+      const link = document.createElement("a");
+      link.download = `Fotocheck_HackeaTuCarrera_2027_${data.codigo}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function construirPDF(data) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [95, 154]
+      });
+
+      const W = 95;
+      const H = 154;
+
+      doc.setFillColor(7, 10, 24);
+      doc.rect(0, 0, W, H, "F");
+
+      doc.setDrawColor(16, 28, 52);
+      doc.setLineWidth(0.15);
+      for (let gx = 8; gx < W; gx += 8) doc.line(gx, 0, gx, H);
+      for (let gy = 8; gy < H; gy += 8) doc.line(0, gy, W, gy);
+
+      doc.setDrawColor(0, 246, 255);
+      doc.setLineWidth(0.65);
+      doc.roundedRect(3, 3, W - 6, H - 6, 4, 4, "S");
+
+      doc.setDrawColor(255, 0, 127);
+      doc.setLineWidth(0.28);
+      doc.roundedRect(4.25, 4.25, W - 8.5, H - 8.5, 2.75, 2.75, "S");
+
+      doc.setFillColor(3, 4, 10);
+      doc.setDrawColor(0, 246, 255);
+      doc.setLineWidth(0.38);
+      doc.roundedRect(38.5, 6.75, 18, 3.25, 1.6, 1.6, "FD");
+
+      doc.setFillColor(12, 34, 54);
+      doc.roundedRect(25.5, 12.75, 44, 5.25, 2.6, 2.6, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(0, 246, 255);
+      doc.text("FASE 0  •  EDICIÓN 2027", W / 2, 16.25, { align: "center" });
+
+      doc.setFontSize(13.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text("HACKEA TU CARRERA", W / 2, 24, { align: "center" });
+
+      doc.setFontSize(7.2);
+      doc.setTextColor(255, 0, 127);
+      doc.text("ESCAPE ROOM PROFESIONAL", W / 2, 28.5, { align: "center" });
+
+      if (data.fotoBase64 && data.fotoBase64.startsWith("data:image/jpeg")) {
+        doc.addImage(data.fotoBase64, "JPEG", 31.75, 32.25, 31.5, 35.5);
+      }
+      doc.setDrawColor(0, 246, 255);
+      doc.setLineWidth(0.65);
+      doc.roundedRect(31.5, 32, 32, 36, 2.5, 2.5, "S");
+
+      const pillText = "META: " + data.habilidad.toUpperCase();
+      const pillW = Math.min(79, Math.max(49, pillText.length * 2.05 + 9));
+      const pillX = (W - pillW) / 2;
+
+      doc.setFillColor(255, 0, 127);
+      doc.roundedRect(pillX, 71, pillW, 5.75, 2.8, 2.8, "F");
+      doc.setFontSize(6.8);
+      doc.setTextColor(255, 255, 255);
+      doc.text(pillText, W / 2, 74.75, { align: "center" });
+
+      const nombreUpper = data.nombres.toUpperCase();
+      const nombrePt = nombreUpper.length > 28 ? 8.5 : (nombreUpper.length > 22 ? 9.5 : 10.5);
+      doc.setFontSize(nombrePt);
+      doc.setTextColor(255, 255, 255);
+      doc.text(nombreUpper, W / 2, 82.5, { align: "center" });
+
+      const acadLinea = `${data.carrera} (${data.facultad}) • ${data.ciclo}° Ciclo`;
+      const acadPt = acadLinea.length > 42 ? 6.6 : 7.5;
+      doc.setFontSize(acadPt);
+      doc.setTextColor(0, 246, 255);
+      doc.text(acadLinea, W / 2, 87.25, { align: "center" });
+
+      doc.setFillColor(10, 14, 32);
+      doc.setDrawColor(34, 62, 99);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(8, 91.5, 79, 28, 2.5, 2.5, "FD");
+
+      const areaConNivel = `${data.areaInteres} (${data.nivelArea}/10)`;
+      const areaPt = areaConNivel.length > 26 ? 6.4 : 7.1;
+
+      const rows = [
+        { k: "CÓDIGO UNI:", v: data.codigo, y: 97.75, vPt: 7.1 },
+        { k: "ÁREA DE INTERÉS:", v: areaConNivel, y: 103.75, vPt: areaPt },
+        { k: "A FORTALECER:", v: data.habilidad, y: 109.75, vPt: 7.1 },
+        { k: "OBJETIVO:", v: data.objetivo, y: 115.75, vPt: 7.1 }
+      ];
+
+      rows.forEach(r => {
+        doc.setFontSize(7.0);
+        doc.setTextColor(255, 0, 127);
+        doc.text(r.k, 11.5, r.y);
+
+        doc.setFontSize(r.vPt);
+        doc.setTextColor(255, 255, 255);
+        doc.text(r.v, 83.5, r.y, { align: "right" });
+      });
+
+      doc.setDrawColor(0, 246, 255);
+      doc.setLineWidth(0.25);
+      doc.line(8, 122.75, 87, 122.75);
+
+      const qr = qrcode(0, "M");
+      qr.addData(data.qrPayload);
+      qr.make();
+      const count = qr.getModuleCount();
+
+      const qrBoxSize = 20.5;
+      const qrX = 8;
+      const qrY = 126;
+
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(qrX, qrY, qrBoxSize, qrBoxSize, 1.5, 1.5, "F");
+
+      const padding = 1.38;
+      const cellSize = (qrBoxSize - padding * 2) / count;
+      doc.setFillColor(6, 9, 20);
+
+      for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+          if (qr.isDark(r, c)) {
+            doc.rect(
+              qrX + padding + c * cellSize,
+              qrY + padding + r * cellSize,
+              cellSize,
+              cellSize,
+              "F"
+            );
+          }
+        }
+      }
+
+      doc.setFontSize(5.7);
+      doc.setTextColor(203, 213, 225);
+      doc.text("UNIVERSIDAD NACIONAL DE INGENIERÍA", 87, 130.75, { align: "right" });
+
+      doc.setFontSize(6.2);
+      doc.setTextColor(0, 246, 255);
+      doc.text("PASE OFICIAL DE JUGADOR • 2027", 87, 135.25, { align: "right" });
+
+      doc.setFillColor(12, 34, 54);
+      doc.roundedRect(54.5, 138.5, 32.5, 6, 1.25, 1.25, "F");
+      doc.setFontSize(6.8);
+      doc.setTextColor(0, 246, 255);
+      doc.text("#" + data.serialUnico, 70.75, 142.5, { align: "center" });
+
+      return doc;
+    }
+
+    function descargarFotocheckPDF() {
+      if (!jugadorActual) return;
+      const doc = construirPDF(jugadorActual);
+      doc.save(`Fotocheck_HackeaTuCarrera_2027_${jugadorActual.codigo}.pdf`);
+    }
+
+    document.getElementById("perfilForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const area = document.getElementById("areaInteres").value;
+      const nivelArea = document.getElementById("nivelArea").value;
+      const habilidad = document.getElementById("habilidad").value;
+      const objetivo = document.getElementById("objetivo").value;
+
+      if (!area || !habilidad || !objetivo) {
+        return mostrarError("Responde las 3 preguntas de calibración antes de generar tu pase.");
+      }
+
+      const btn = document.getElementById("btnSubmit");
+      btn.textContent = "⏳ GUARDANDO EN BASE DE DATOS Y ENVIANDO...";
+      btn.disabled = true;
+
+      const nombres = document.getElementById("nombres").value.trim();
+      const codigo = document.getElementById("codigo").value.trim().toUpperCase();
+      const correo = document.getElementById("correo").value.trim();
+      const facultad = document.getElementById("facultad").value;
+      const carrera = document.getElementById("carrera").value;
+      const ciclo = document.getElementById("ciclo").value;
+
+      const serialUnico = generarIdentificadorUnico();
+      // El código QR apunta directamente a la plataforma en GitHub Pages con el ID del inscrito
+      const qrPayload = `${obtenerBaseUrlSitio()}?id=${encodeURIComponent(serialUnico)}`;
+
+      jugadorActual = {
+        nombres,
+        codigo,
+        correo,
+        facultad,
+        carrera,
+        ciclo,
+        areaInteres: area,
+        nivelArea,
+        habilidad,
+        objetivo,
+        serialUnico,
+        qrPayload,
+        fotoBase64: fotoProcesadaBase64
+      };
+
+      document.getElementById("vectorPreviewContainer").innerHTML = generarFotocheckSVG(jugadorActual);
+      document.getElementById("sentEmailDisplay").textContent = correo;
+
+      const pdfDoc = construirPDF(jugadorActual);
+      const pdfBase64 = pdfDoc.output("datauristring").split(",")[1];
+
+      const payload = {
+        nombres,
+        codigo,
+        correo,
+        facultad,
+        carrera,
+        ciclo,
+        areaInteres: area,
+        nivelArea,
+        habilidad,
+        objetivo,
+        serialUnico,
+        qrPayload,
+        fotoBase64: fotoProcesadaBase64,
+        carnetPdfBase64: pdfBase64
+      };
+
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.startsWith("https://script.google.com/")) {
+        try {
+          await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {
+          console.error("Error enviando registro:", err);
+        }
+        cambiarEtapa(3);
+      } else {
+        setTimeout(() => cambiarEtapa(3), 350);
+      }
+    });
+  </script>
+</body>
+</html>
