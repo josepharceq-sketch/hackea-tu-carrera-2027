@@ -947,6 +947,25 @@
     let fotoProcesadaBase64 = "";
     let fotoImageObj = null;
 
+    function limpiarNivelArea(raw) {
+      if (raw === null || raw === undefined) return "";
+      const str = String(raw).trim();
+      if (/^(10|[1-9])$/.test(str)) return str;
+      const matchFrac = str.match(/^(10|[1-9])\s*\/\s*10$/);
+      if (matchFrac) return matchFrac[1];
+      if (str.includes("GMT") || /^\d{4}-\d{2}-\d{2}/.test(str)) {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          const dia = d.getDate();
+          const mes = d.getMonth() + 1;
+          if (mes === 10 && dia >= 1 && dia <= 10) return String(dia);
+          if (dia === 10 && mes >= 1 && mes <= 10) return String(mes);
+        }
+        return "";
+      }
+      return str.replace(/\/10$/, "");
+    }
+
     function obtenerBaseUrlSitio() {
       if (window.location.protocol === "http:" || window.location.protocol === "https:") {
         return window.location.origin + window.location.pathname;
@@ -991,7 +1010,7 @@
             carrera: j.carrera,
             ciclo: j.ciclo,
             areaInteres: j.areaInteres,
-            nivelArea: j.nivelArea,
+            nivelArea: limpiarNivelArea(j.nivelArea),
             habilidad: j.habilidad,
             objetivo: j.objetivo,
             serialUnico: j.serialUnico,
@@ -1264,7 +1283,8 @@
       const nombreFontSize = nombreUpper.length > 28 ? 13.5 : (nombreUpper.length > 22 ? 15 : 16.5);
       const acadLinea = `${data.carrera} (${data.facultad}) • ${data.ciclo}° Ciclo`;
       const acadFontSize = acadLinea.length > 42 ? 10.5 : 12;
-      const areaConNivel = `${data.areaInteres} (${data.nivelArea}/10)`;
+      const nivelLimpio = limpiarNivelArea(data.nivelArea);
+      const areaConNivel = nivelLimpio ? `${data.areaInteres} (${nivelLimpio}/10)` : data.areaInteres;
       const areaFontSize = areaConNivel.length > 26 ? 10.2 : 11.2;
 
       return `
@@ -1450,7 +1470,8 @@
       ctx.fill();
       ctx.stroke();
 
-      const areaConNivel = `${data.areaInteres} (${data.nivelArea}/10)`;
+      const nivelLimpio = limpiarNivelArea(data.nivelArea);
+      const areaConNivel = nivelLimpio ? `${data.areaInteres} (${nivelLimpio}/10)` : data.areaInteres;
       const areaFontSize = areaConNivel.length > 26 ? 10.2 : 11.2;
 
       const rows = [
@@ -1617,7 +1638,8 @@
       doc.setLineWidth(0.3);
       doc.roundedRect(8, 91.5, 79, 28, 2.5, 2.5, "FD");
 
-      const areaConNivel = `${data.areaInteres} (${data.nivelArea}/10)`;
+      const nivelLimpio = limpiarNivelArea(data.nivelArea);
+      const areaConNivel = nivelLimpio ? `${data.areaInteres} (${nivelLimpio}/10)` : data.areaInteres;
       const areaPt = areaConNivel.length > 26 ? 6.4 : 7.1;
 
       const rows = [
