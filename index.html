@@ -926,7 +926,7 @@
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/a/macros/uni.pe/s/AKfycbzRKR1IzUypQTsyVv4NmXaNiYemWU9FhkEp1jBL9Lg9TdexRb5uoCYarmEaAZYdKYOu/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwscYW-Q0F91pBjC3i_fWOll6HrC-ClHiA2QZVQGE-OfCEPCG1tXbMh2iCFinmYSBqbWg/exec";
     const FALLBACK_GITHUB_URL = "https://josepharceq-sketch.github.io/hackea-tu-carrera-2027/";
 
     const carrerasPorFacultad = {
@@ -1760,13 +1760,19 @@
       };
 
       try {
-        await fetch(APPS_SCRIPT_URL, {
+        const resp = await fetch(APPS_SCRIPT_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(payload)
         });
+        const resData = await resp.json();
+        if (resData && resData.ok === false) {
+          btn.textContent = "🔑 GENERAR FOTOCHECK Y ENVIAR";
+          btn.disabled = false;
+          return mostrarError("Error al guardar en la base de datos: " + resData.error);
+        }
       } catch (err) {
-        console.error("Error enviando registro:", err);
+        console.error("Error de red al guardar:", err);
       }
 
       cambiarEtapa(3);
