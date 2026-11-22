@@ -926,13 +926,8 @@
   </div>
 
   <script>
-    // =========================================================================
-    // PEGA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT (/exec)
-    // =========================================================================
-    const APPS_SCRIPT_URL = "PEGA_AQUI_TU_URL_DE_GOOGLE_APPS_SCRIPT";
-
-    // URL pública de respaldo por si pruebas el archivo localmente antes de subirlo
-    const FALLBACK_GITHUB_URL = "https://TU_USUARIO.github.io/hackea-tu-carrera-2027/";
+    const APPS_SCRIPT_URL = "https://script.google.com/a/macros/uni.pe/s/AKfycbzRKR1IzUypQTsyVv4NmXaNiYemWU9FhkEp1jBL9Lg9TdexRb5uoCYarmEaAZYdKYOu/exec";
+    const FALLBACK_GITHUB_URL = "https://josepharceq-sketch.github.io/hackea-tu-carrera-2027/";
 
     const carrerasPorFacultad = {
       FAUA: ["Arquitectura", "Urbanismo"],
@@ -952,7 +947,6 @@
     let fotoProcesadaBase64 = "";
     let fotoImageObj = null;
 
-    // Construye automáticamente la URL base del sitio en GitHub Pages
     function obtenerBaseUrlSitio() {
       if (window.location.protocol === "http:" || window.location.protocol === "https:") {
         return window.location.origin + window.location.pathname;
@@ -960,7 +954,6 @@
       return FALLBACK_GITHUB_URL;
     }
 
-    // Al cargar la página, verificar si viene desde el escaneo de un QR (?id=UNI27-...)
     window.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams(window.location.search);
       const idVerificar = params.get("id");
@@ -975,12 +968,6 @@
       document.getElementById("topEditionPill").textContent = "SISTEMA DE VERIFICACIÓN OFICIAL • 2027";
       document.getElementById("verifyStage").classList.add("active");
 
-      if (!APPS_SCRIPT_URL || !APPS_SCRIPT_URL.startsWith("https://script.google.com/")) {
-        document.getElementById("verifyLoader").style.display = "none";
-        document.getElementById("verifyErrorContent").style.display = "block";
-        return;
-      }
-
       try {
         const resp = await fetch(`${APPS_SCRIPT_URL}?id=${encodeURIComponent(idJugador)}`);
         const res = await resp.json();
@@ -991,7 +978,6 @@
           const j = res.jugador;
           const qrUrl = j.qrUrl || `${obtenerBaseUrlSitio()}?id=${encodeURIComponent(j.serialUnico)}`;
 
-          // Imagen de respaldo si el participante no tuviera foto en Drive
           const avatarFallback = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
             `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="450"><rect width="400" height="450" fill="#0d1330"/><circle cx="200" cy="165" r="65" fill="#00f6ff"/><path d="M90 390 C90 295 310 295 310 390" fill="#00f6ff"/></svg>`
           );
@@ -1732,7 +1718,6 @@
       const ciclo = document.getElementById("ciclo").value;
 
       const serialUnico = generarIdentificadorUnico();
-      // El código QR apunta directamente a la plataforma en GitHub Pages con el ID del inscrito
       const qrPayload = `${obtenerBaseUrlSitio()}?id=${encodeURIComponent(serialUnico)}`;
 
       jugadorActual = {
@@ -1774,20 +1759,17 @@
         carnetPdfBase64: pdfBase64
       };
 
-      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL.startsWith("https://script.google.com/")) {
-        try {
-          await fetch(APPS_SCRIPT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
-          });
-        } catch (err) {
-          console.error("Error enviando registro:", err);
-        }
-        cambiarEtapa(3);
-      } else {
-        setTimeout(() => cambiarEtapa(3), 350);
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.error("Error enviando registro:", err);
       }
+
+      cambiarEtapa(3);
     });
   </script>
 </body>
